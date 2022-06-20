@@ -1,0 +1,38 @@
+4.2.5 MATCH (airport:Airport)<-[:ORIGIN]-(f:Flight)
+WITH airport, count(f) AS flights
+RETURN airport, flights
+ORDER BY flights ASC
+4.2.6 MATCH d = (origin:Airport { name:"LAX" })<-[r1:ORIGIN]-(:Flight)-[r2:ORIGIN|DESTINATION*..10]->(destination:Airport)
+WHERE REDUCE(acc = 0, n IN [x IN NODES(d) WHERE 'Flight' IN LABELS(x)] |
+  acc + [(n)<-[:ASSIGN]-(ticket) | ticket.price][0]
+  ) < 3000
+RETURN d
+4.2.7 MATCH d = (origin:Airport { name:"LAX" })<-[r1:ORIGIN]-(:Flight)-[r2:ORIGIN|DESTINATION*..10]->(destination:Airport {name: "DAY"})
+WITH d, REDUCE(acc = 0, n IN [x IN NODES(d) WHERE 'Flight' IN LABELS(x)] |
+  acc + [(n)<-[:ASSIGN]-(ticket) | ticket.price][0]
+  ) as price
+RETURN d, price
+ORDER BY price ASC
+
+//Nie ma takich lotów
+
+4.2.8 MATCH d = (origin:Airport { name:"LAX" })<-[r1:ORIGIN]-(:Flight)-[r2:ORIGIN|DESTINATION*..10]->(destination:Airport {name: "DAY"})
+WITH d, REDUCE(acc = 0, n IN [x IN NODES(d) WHERE 'Flight' IN LABELS(x)] |
+  acc + [(n)<-[:ASSIGN]-(ticket {class: 'business'}) | ticket.price][0]
+  ) as price
+RETURN d, price
+ORDER BY price asc LIMIT 1
+
+//Nie ma takich lotów
+
+4.2.9 MATCH (f:Flight)-[:DESTINATION|ORIGIN]->(a:Airport)
+RETURN f.airline, count(distinct(a)) ORDER BY count(distinct(a)) DESC
+
+4.2.10 MATCH d = (a1:Airport)<-[r1:ORIGIN]-(f1:Flight)-[r2:DESTINATION]->(a2:Airport)<-[r3:ORIGIN]-(f2:Flight)-[r4:DESTINATION]->(a3:Airport)
+WHERE not(a1=a2) AND not(a1=a3) AND not(a2=a3)
+WITH d, REDUCE(acc = 0, n IN [x IN NODES(d) WHERE 'Flight' IN LABELS(x)] |
+  acc + [(n)<-[:ASSIGN]-(ticket {class: 'economy'}) | ticket.price][0]
+  ) as price
+RETURN d, price
+ORDER BY price ASC LIMIT 1
+

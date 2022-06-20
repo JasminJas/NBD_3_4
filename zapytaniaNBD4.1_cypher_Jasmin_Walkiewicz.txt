@@ -1,0 +1,14 @@
+4.1.1 MATCH (source:town {name: "Darjeeling"}), (target:peak {name: "Sandakphu"}) MATCH d = allShortestPaths((source)-[*]->(target)) RETURN d
+4.1.2 MATCH (source:town {name: "Darjeeling"}), (target:peak {name: "Sandakphu"}), d = allShortestPaths((source)-[*]->(target))
+WITH d, relationships(d) as rel
+WHERE ALL (r in rel WHERE r.winter = "true")
+RETURN d, rel
+4.1.3 MATCH d = (source:town {name: "Darjeeling"})-[r*]->(target:peak {name: "Sandakphu"})
+UNWIND r as rel
+WITH d, COLLECT(rel.distance) AS distances
+WITH d, reduce(acc = 0, di in distances | acc + di) as distance
+RETURN d, distance
+ORDER BY distance ASC
+4.1.4 MATCH d = (source:town {name: "Darjeeling"})-[r:twowheeler*]->(destination)
+WHERE ALL (r IN relationships(d) WHERE r.summer = "true")
+RETURN destination
